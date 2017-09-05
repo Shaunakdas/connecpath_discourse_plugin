@@ -24,9 +24,9 @@
 
 # end
 
-load File.expand_path('../lib/discourse_endpoint.rb', __FILE__)
+load File.expand_path('../lib/connecpath_helper.rb', __FILE__)
 # module DiscourseEndpoint ; end
-load File.expand_path('../lib/discourse_endpoint/engine.rb', __FILE__)
+load File.expand_path('../lib/connecpath_helper/engine.rb', __FILE__)
 # module DiscourseEndpoint
 #   class Engine < ::Rails::Engine
 #     isolate_namespace DiscourseEndpoint
@@ -35,5 +35,5 @@ load File.expand_path('../lib/discourse_endpoint/engine.rb', __FILE__)
 
 # And mount the engine
 Discourse::Application.routes.append do
-  mount ::DiscourseEndpoint::Engine, at: '/endpoint'
+  mount ::ConnecpathHelper::Engine, at: '/endpoint'
 end

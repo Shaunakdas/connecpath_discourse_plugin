@@ -1,4 +1,4 @@
-module DiscourseEndpoint
+module ConnecpathHelper
   class UsersController < ApplicationController
 
     # def current
