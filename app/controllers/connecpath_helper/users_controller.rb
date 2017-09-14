@@ -1,13 +1,18 @@
 module ConnecpathHelper
   class UsersController < ApplicationController
 
-    # def current
-    #   if current_user.present?
-    #     retrieve_user_info
-    #   else
-    #     render nothing: true, status: 404
-    #   end
+    
+    # def internal_request(path, params={})
+    #   request_env = Rack::MockRequest.env_for(path, params: params.to_query)
+
+    #   # Returns: [ status, headers, body ]
+    #   Rails.application.routes.call(request_env)
     # end
+
+    # def trial
+    #   internal_request('/users/password-reset/'+params[:email_token])
+    # end
+
     def list
       puts "Params Role"+ params["role"]
       user_list = []
@@ -26,10 +31,70 @@ module ConnecpathHelper
       total_count = user_list.count
       render json: { total_count: total_count, user_list: result, role: params["role"], page: page_num+1, limit: limit}
     end
+
+    def login_info
+      if params[:login]
+        login_info = params[:login]
+        user = User.find_by_username_or_email(params[:login])
+      elsif params[:id]
+        user = User.where(id: params[:id]).last
+      end
+      if(!user)
+        render json: { errors: "Login info couldn't be found"}
+      else
+        user_params = (user.slice(:email, :active, :name, :username, :id, :created_at))      
+        user_params[:user_fields] = add_field_name(user.user_fields)       
+        render json: { user: user_params}
+      end
+    end
+    def email_token
+      email_token =''
+
+      if params[:user_id]
+        email_token = EmailToken.where(user_id: params[:user_id]).last
+        user = User.where(id: params[:user_id]).last
+      elsif params[:username]
+        user = User.where(username: params[:username]).last
+        email_token = EmailToken.where(user_id: user.id).last
+      elsif params[:email]
+        email_token = EmailToken.where(email: params[:email]).last
+        user = User.where(email: params[:email]).last
+      else
+        email_token = EmailToken.last
+      end
+      if !email_token.confirmed && !email_token.expired
+        render json: { success: true, email_token: email_token, username: user.username}
+      else
+        render json: {errors: "Email Token is not valid anymore. Kindly reset password again"}
+      end
+    end
+
+
+    def activate_token
+      if params[:username]
+        user = User.where(username: params[:username]).last
+      elsif params[:email]
+        user = User.where(email: params[:email]).last
+      else
+        render json: { error: "No params found"}
+      end
+      if user
+        activation_token = user.user_fields["6"]
+        if activation_token 
+          # Activate user with new password
+          email_token = EmailToken.where(user_id: params[:user_id]).last
+          EmailToken.confirm(token)
+        end
+      end
+      render json: { email_token: email_token}
+    end
+
+
     def sample
       user = User.first.user_fields
       render json: { name: "donut", description: "delicious!", user: user}
     end
+
     def create_post
       posts_controller = PostsController.new
       params = { created_at: "2017-09-23", raw: "Reply to 6 2017-09-262017-09-262017-09-262017-09-26", topic_id: 1,  reply_to_post_number: 6}

@@ -5,6 +5,9 @@ ConnecpathHelper::Engine.routes.draw do
       get 'list'
       get 'sample'
       get 'create_post'
+      get 'email_token'
+      post 'trial'
+      get 'login_info'
     end
   end
 end
