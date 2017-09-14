@@ -13,6 +13,80 @@ module ConnecpathHelper
     #   internal_request('/users/password-reset/'+params[:email_token])
     # end
 
+    def user_details(arr)
+      arr = arr.uniq
+      user_expanded_list = {}
+      arr.each do |id|
+        user = User.where(id: id).first
+        user_params = (user.slice(:email, :active, :name, :username, :id, :created_at))      
+        user_params[:user_fields] = add_field_name(user.user_fields).slice("role", "graduation_year")     
+        user_expanded_list[id.to_s] = user_params 
+      end
+      return user_expanded_list
+    end
+
+    def user_fields
+      user_expanded_list = {}
+
+      # puts params
+      # puts params[:user_list]
+      params[:user_list].each do |id|
+        user = User.where(id: id).first
+        user_params = (user.slice(:email, :active, :name, :username, :id, :created_at))      
+        user_params[:user_fields] = add_field_name(user.user_fields).slice("role", "graduation_year")     
+        user_expanded_list[id.to_s] = user_params 
+      end
+      render json: {id_stream: params.slice(:user_list), field_stream: user_expanded_list}
+    end
+
+    def topic_list
+      topic_expanded_list = []
+      user_expanded_list = {}
+      user_list = []
+      # puts params
+      # puts params[:topic_list]
+      params[:topic_list].each do |id|
+        topic = Topic.where(id: id).first
+        topic_params = (topic.slice(:id, :title, :last_posted_at, :created_at, :posts_count, :user_id, :reply_count, :category_id, :participant_count))      
+        
+        topic_params["post_stream"] = []
+        Post.where(topic: topic).limit(2).each do |post|
+          # puts post.to_json
+          puts post.user_id
+          user_list << post.user_id
+          post_params = (post.slice(:id, :user_id, :post_number, :raw, :reply_count, :like_count, :created_at))   
+          topic_params["post_stream"] << post_params 
+        # post = Topic.where(id: id).first
+        end
+        topic_expanded_list << topic_params 
+      end
+
+      user_expanded_list = user_details(user_list)
+      render json: {id_stream: params.slice(:topic_list), details_stream: topic_expanded_list, user_stream: user_expanded_list}
+    end
+
+    def topic_details
+      topic_expanded_list = {}
+      user_expanded_list = {}
+      user_list = []
+      topic = Topic.where(id: params[:id]).first
+      topic_params = (topic.slice(:id, :title, :last_posted_at, :created_at, :posts_count, :user_id, :reply_count, :category_id, :participant_count))      
+      topic_expanded_list["details"] = topic_params 
+      topic_expanded_list["details"]["post_stream"] = []
+      Post.where(topic: topic).order('created_at ASC').each do |post|
+        user_list << post.user_id
+        puts post.to_json
+        post_params = (post.slice(:id, :user_id, :post_number, :raw, :reply_count, :like_count, :created_at, :reply_to_post_number))   
+        topic_expanded_list["details"]["post_stream"] << post_params 
+      # post = Topic.where(id: id).first
+      end
+
+      user_expanded_list = user_details(user_list)
+      render json: { details_stream: topic_expanded_list, user_stream: user_expanded_list}
+    end
+
+
+
     def list
       puts "Params Role"+ params["role"]
       user_list = []

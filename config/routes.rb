@@ -7,7 +7,10 @@ ConnecpathHelper::Engine.routes.draw do
       get 'create_post'
       get 'email_token'
       post 'trial'
+      post 'user_fields'
+      post 'topic_list'
       get 'login_info'
+      get 'topic_details'
     end
   end
 end
