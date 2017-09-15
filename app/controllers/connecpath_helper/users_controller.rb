@@ -12,7 +12,41 @@ module ConnecpathHelper
     # def trial
     #   internal_request('/users/password-reset/'+params[:email_token])
     # end
-
+    def update_user_field
+      if params[:login]
+        login_info = params[:login]
+        user = User.find_by_username_or_email(params[:login])
+      elsif params[:id]
+        user = User.where(id: params[:id]).last
+      end
+      if(!user)
+        render json: { errors: "Login info couldn't be found"}
+      else
+        key = params[:field_key]
+        value = params[:field_value]
+        user.custom_fields['role']=value.to_s
+        user.save!
+        # fields = UserCustomField.where(user_id: user.id)
+        # puts fields.to_json
+        # fields.each do |field|
+        #   if field['name'] == 'user_field_'+key.to_s
+        #     field['value'] = value
+        #     field.save!
+        #   end
+        # end
+        # puts fields.to_json
+        # puts field['user_field_'+key.to_s]=
+        # user.user_fields['6']='ABCDEF'
+        # user.save!
+        puts user.user_fields
+        new_user = User.where(id: user.id).last
+        puts new_user.to_json
+        user_params = (new_user.slice(:email, :active, :name, :username, :id, :created_at))      
+        user_params[:user_fields] = add_field_name(new_user.user_fields)
+        user_params[:result] = 'ok'
+        render json: user_params 
+      end
+    end
     def user_details(arr)
       arr = arr.uniq
       user_expanded_list = {}
