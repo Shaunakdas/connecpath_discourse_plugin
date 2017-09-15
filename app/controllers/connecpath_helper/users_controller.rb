@@ -53,7 +53,7 @@ module ConnecpathHelper
       arr.each do |id|
         user = User.where(id: id).first
         user_params = (user.slice(:email, :active, :name, :username, :id, :created_at))      
-        user_params[:user_fields] = add_field_name(user.user_fields).slice("role", "graduation_year")     
+        user_params[:user_fields] = add_field_name(user.user_fields)
         user_expanded_list[id.to_s] = user_params 
       end
       return user_expanded_list
@@ -67,7 +67,7 @@ module ConnecpathHelper
       params[:user_list].each do |id|
         user = User.where(id: id).first
         user_params = (user.slice(:email, :active, :name, :username, :id, :created_at))      
-        user_params[:user_fields] = add_field_name(user.user_fields).slice("role", "graduation_year")     
+        user_params[:user_fields] = add_field_name(user.user_fields)
         user_expanded_list[id.to_s] = user_params 
       end
       render json: {id_stream: params.slice(:user_list), field_stream: user_expanded_list}
@@ -88,7 +88,7 @@ module ConnecpathHelper
           puts username
           puts user.to_json
           user_params = (user.slice(:email, :active, :name, :username, :id, :created_at))      
-          user_params[:user_fields] = add_field_name(user.user_fields).slice("role", "graduation_year")     
+          user_params[:user_fields] = add_field_name(user.user_fields)
           user_expanded_list << user_params 
         end
       end
@@ -379,7 +379,9 @@ module ConnecpathHelper
 
     def add_field_name(params)
       fields = convert_to_h(params)
-      @mapping  = {"1" => "role", "2" => "graduation_year", "3" => "sendbird_id", "4" => "device_token", "5" => "channel_url", "6" => "activation_token", "7" =>"head_counselor"}
+      @mapping  = {"1" => "role", "2" => "graduation_year", "3" => "sendbird_id", "4" => "device_token",
+     "5" => "channel_url", "6" => "activation_token", "7" =>"head_counselor", "8" => "answers_by_bot",
+      "9" => "answers_by_forum", "10" => "you_posted_to_forum"}
       fields = fields.map {|k, v| [@mapping[k], v] }.to_h
       return fields
     end
