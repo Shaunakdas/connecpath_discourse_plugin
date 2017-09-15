@@ -147,6 +147,105 @@ module ConnecpathHelper
         render json: { user: user_params}
       end
     end
+
+    # USERS
+    def users_all
+      user_list = []
+      User.all.each do |user|
+        puts user.to_json
+        if ((!user.admin)&&(user.id>0))
+          user_list << user.id
+        end
+      end
+      render json: user_list.to_json
+    end
+
+    def delete_user
+      User.where(id: params[:id]) do |user|
+        user.delete
+      end
+      render json: {deleted: params[:id]}
+    end
+
+    def delete_all_users
+      User.all.each do |user|
+        if ((!user.admin)&&(user.id>0))
+          user.delete
+        end
+      end
+      render json: {deleted: true}
+    end
+
+
+    # POSTS
+    def posts_all
+      post_list = []
+      Post.all.each do |post|
+        post_list << post.id
+      end
+      render json: post_list.to_json
+    end
+
+    def delete_post
+      Post.where(id: params[:id]) do |post|
+        post.delete
+      end
+      render json: {deleted: params[:id]}
+    end
+
+    def delete_all_posts
+      Post.all.each do |post|
+        post.delete
+      end
+      render json: {deleted: true}
+    end
+
+    # Topics
+    def topics_all
+      topic_list = []
+      Topic.all.each do |topic|
+        topic_list << topic.id
+      end
+      render json: topic_list.to_json
+    end
+
+    def delete_topic
+      Topic.where(id: params[:id]) do |topic|
+        topic.delete
+      end
+      render json: {deleted: params[:id]}
+    end
+
+    def delete_all_topics
+      Topic.all.each do |topic|
+        topic.delete
+      end
+      render json: {deleted: true}
+    end
+
+    # Categories
+    def categories_all
+      category_list = []
+      Category.all.each do |category|
+        category_list << category.id
+      end
+      render json: category_list.to_json
+    end
+
+    def delete_category
+      Category.where(id: params[:id]) do |category|
+        category.delete
+      end
+      render json: {deleted: params[:id]}
+    end
+
+    def delete_all_categories
+      Category.all.each do |category|
+        category.delete
+      end
+      render json: {deleted: true}
+    end
+
     def email_token
       email_token =''
 
