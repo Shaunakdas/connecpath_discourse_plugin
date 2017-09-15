@@ -117,7 +117,7 @@ module ConnecpathHelper
       puts "Params Role"+ params["role"]
       user_list = []
       User.order(created_at: :desc).each do |user|
-        if(user.user_fields["1"] == params["role"])   
+        if ((!user.admin)&&(user.id>0)&&(user.user_fields["1"] == params["role"])&&(user.user_fields["3"]) ) 
           user_params = (user.slice(:email, :active, :name, :username, :id, :created_at))      
           user_params[:user_fields] = add_field_name(user.user_fields)      
           user_list << user_params    
