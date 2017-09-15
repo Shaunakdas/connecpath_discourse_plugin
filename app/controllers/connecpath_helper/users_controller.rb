@@ -39,6 +39,28 @@ module ConnecpathHelper
       render json: {id_stream: params.slice(:user_list), field_stream: user_expanded_list}
     end
 
+    def user_fields_by_username
+      arr = params[:user_list]
+      arr = arr.uniq
+      user_expanded_list = []
+      # puts params
+      # puts params[:user_list]
+      # User.all.each do |user|
+      #   puts user.username
+      # end
+      arr.each do |username|
+        user = User.where(username: username).first
+        if user
+          puts username
+          puts user.to_json
+          user_params = (user.slice(:email, :active, :name, :username, :id, :created_at))      
+          user_params[:user_fields] = add_field_name(user.user_fields).slice("role", "graduation_year")     
+          user_expanded_list << user_params 
+        end
+      end
+      render json: {username_stream: arr, field_stream: user_expanded_list}
+    end
+
     def topic_list
       topic_expanded_list = []
       user_expanded_list = {}
@@ -83,11 +105,11 @@ module ConnecpathHelper
         topic_params = (topic.slice(:id, :title, :last_posted_at, :created_at, :posts_count, :user_id, :reply_count, :category_id, :participant_count))      
         topic_expanded_list["details"] = topic_params 
         topic_expanded_list["details"]["post_stream"] = []
-        Post.where(topic: topic).order('created_at ASC').each do |post|
+        Post.where(topic: topic).order('post_number ASC').each do |post|
           user_list << post.user_id
-          # puts "Current Post"+post.to_json.to_s
-          post_params = (post.slice(:id, :user_id, :post_number, :raw, :reply_count, :like_count, :created_at, :reply_to_post_number))   
-          puts params[:user_id]
+          puts "Current Post"+post.to_json.to_s
+          post_params = (post.slice(:id, :user_id, :post_number, :raw, :reply_count, :like_count, :created_at, :reply_to_post_number, :user_deleted, :deleted_at, :deleted_by_id))   
+          # puts params[:user_id]
           # puts "Current User"+params[:user_id].to_s
           if params[:user_id]
             post_params[:current_user_liked] = false
