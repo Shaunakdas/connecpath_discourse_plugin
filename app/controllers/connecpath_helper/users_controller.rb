@@ -55,8 +55,17 @@ module ConnecpathHelper
           puts post.user_id
           user_list << post.user_id
           post_params = (post.slice(:id, :user_id, :post_number, :raw, :reply_count, :like_count, :created_at))   
+          if params[:user_id]
+            post_params[:current_user_liked] = false
+            PostAction.where(post: post).each do |post_action|
+              # puts post.to_json
+              puts "Post Action"+post_action.to_json.to_s
+              if post_action.user_id.to_i == params[:user_id].to_i
+                post_params[:current_user_liked] = true
+              end
+            end
+          end
           topic_params["post_stream"] << post_params 
-        # post = Topic.where(id: id).first
         end
         topic_expanded_list << topic_params 
       end
@@ -70,15 +79,32 @@ module ConnecpathHelper
       user_expanded_list = {}
       user_list = []
       topic = Topic.where(id: params[:id]).first
-      topic_params = (topic.slice(:id, :title, :last_posted_at, :created_at, :posts_count, :user_id, :reply_count, :category_id, :participant_count))      
-      topic_expanded_list["details"] = topic_params 
-      topic_expanded_list["details"]["post_stream"] = []
-      Post.where(topic: topic).order('created_at ASC').each do |post|
-        user_list << post.user_id
-        puts post.to_json
-        post_params = (post.slice(:id, :user_id, :post_number, :raw, :reply_count, :like_count, :created_at, :reply_to_post_number))   
-        topic_expanded_list["details"]["post_stream"] << post_params 
-      # post = Topic.where(id: id).first
+      if(topic)
+        topic_params = (topic.slice(:id, :title, :last_posted_at, :created_at, :posts_count, :user_id, :reply_count, :category_id, :participant_count))      
+        topic_expanded_list["details"] = topic_params 
+        topic_expanded_list["details"]["post_stream"] = []
+        Post.where(topic: topic).order('created_at ASC').each do |post|
+          user_list << post.user_id
+          # puts "Current Post"+post.to_json.to_s
+          post_params = (post.slice(:id, :user_id, :post_number, :raw, :reply_count, :like_count, :created_at, :reply_to_post_number))   
+          puts params[:user_id]
+          # puts "Current User"+params[:user_id].to_s
+          if params[:user_id]
+            post_params[:current_user_liked] = false
+            PostAction.where(post: post).each do |post_action|
+              # puts post.to_json
+              # puts "Post Action"+post_action.to_json.to_s + (post_action.user_id.to_i == params[:user_id].to_i).to_s
+              # puts "Post Action User"+post_action.user_id.to_s + (params[:user_id].to_s)
+              if post_action.user_id.to_i == params[:user_id].to_i
+                puts "Adding Current User Like"
+                post_params[:current_user_liked] = true
+              end
+            end
+          end
+
+          topic_expanded_list["details"]["post_stream"] << post_params 
+        # post = Topic.where(id: id).first
+        end
       end
 
       user_expanded_list = user_details(user_list)
