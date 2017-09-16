@@ -2,6 +2,7 @@ ConnecpathHelper::Engine.routes.draw do
   resource :users do
     collection do
       # get 'current'
+      get 'create_counselor_notification'
       post 'update_user_field'
       get 'list'
       get 'sample'

@@ -167,7 +167,34 @@ module ConnecpathHelper
       render json: { details_stream: topic_expanded_list, user_stream: user_expanded_list}
     end
 
-
+    def create_counselor_notification
+      # Fetching Counselor Notification
+      # post_number,topic_id,notification_type(8),user_id
+      # data: topic_title,original_post_id, original_post_type(1), original_username, display_username
+      # where('full_name LIKE :search OR code LIKE :search', search: "%#{search}%")
+      post = Post.where(id: params[:post_id]).first
+      user_h = User.all
+      user_h.order(created_at: :desc).each do |user|
+        if ((!user.admin)&&(user.id>0)&&(user.user_fields["1"] == 'Counselor')&&(user.user_fields["3"]) )  
+          data = {
+            original_post_id: post.id,
+            original_post_type: 1,
+            topic_title: post.topic.title,
+            original_username: post.user.username,
+            display_username: post.user.username
+          }
+          Notification.create(
+            notification_type: Notification.types[:invited_to_topic],
+            topic_id: post.topic_id,
+            post_number: post.post_number,
+            user_id: user.id,
+            read: false,
+            data: data.to_json
+          )
+        end  
+      end 
+      render json: {notified: true} 
+    end
 
     def list
       puts "Params Role"+ params["role"]
