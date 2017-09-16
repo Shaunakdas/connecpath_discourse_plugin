@@ -172,8 +172,19 @@ module ConnecpathHelper
     def list
       puts "Params Role"+ params["role"]
       user_list = []
-      User.order(created_at: :desc).each do |user|
+      # where('full_name LIKE :search OR code LIKE :search', search: "%#{search}%")
+      user_h = User.all
+
+      if params["query"]
+        query = params["query"]
+        user_h = User.where('name LIKE :search OR username LIKE :search', search: "%#{query}%")
+      elsif params["name"]
+        query = params["name"]
+        user_h = User.where('name LIKE :search', search: "%#{query}%")
+      end
+      user_h.order(created_at: :desc).each do |user|
         if ((!user.admin)&&(user.id>0)&&(user.user_fields["1"] == params["role"])&&(user.user_fields["3"]) ) 
+          puts user.name
           user_params = (user.slice(:email, :active, :name, :username, :id, :created_at))      
           user_params[:user_fields] = add_field_name(user.user_fields)      
           user_list << user_params    
@@ -198,6 +209,9 @@ module ConnecpathHelper
       if(!user)
         render json: { errors: "Login info couldn't be found"}
       else
+        # puts user.to_json
+        avatar = UserAvatar.where(user: user).last
+        puts avatar.to_json
         user_params = (user.slice(:email, :active, :name, :username, :id, :created_at))      
         user_params[:user_fields] = add_field_name(user.user_fields)       
         render json: { user: user_params}
