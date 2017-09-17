@@ -12,6 +12,20 @@ module ConnecpathHelper
     # def trial
     #   internal_request('/users/password-reset/'+params[:email_token])
     # end
+
+    def user_by_sendbird_id
+      sendbird_id = params[:id]
+      User.order(created_at: :desc).each do |user|
+        if ((user.id>0)&&(user.user_fields["3"])&&(user.user_fields["3"] == sendbird_id) ) 
+          puts user.name
+          user_params = (user.slice(:email, :active, :name, :username, :id, :created_at))
+          user_params[:user_fields] = add_field_name(user.user_fields)
+          break   
+        end  
+      end
+      render json: user_params
+    end
+
     def update_user_field
       if params[:login]
         login_info = params[:login]
@@ -165,6 +179,18 @@ module ConnecpathHelper
 
       user_expanded_list = user_details(user_list)
       render json: { details_stream: topic_expanded_list, user_stream: user_expanded_list}
+    end
+
+    def mark_notification_as_read
+      if params[:id]
+        notification = Notification.where(id: params[:id]).first
+        notification.read = true
+        notification.save!
+
+        render json: {success: true}
+      else
+        render json: {error: 'No id present'}
+      end
     end
 
     def create_counselor_notification
@@ -422,7 +448,7 @@ module ConnecpathHelper
       fields = convert_to_h(params)
       @mapping  = {"1" => "role", "2" => "graduation_year", "3" => "sendbird_id", "4" => "device_token",
      "5" => "channel_url", "6" => "activation_token", "7" =>"head_counselor", "8" => "answers_by_bot",
-      "9" => "answers_by_forum", "10" => "you_posted_to_forum"}
+      "9" => "answers_by_forum", "10" => "you_posted_to_forum", "11" => 'sendbird_broadcast_url'}
       fields = fields.map {|k, v| [@mapping[k], v] }.to_h
       return fields
     end

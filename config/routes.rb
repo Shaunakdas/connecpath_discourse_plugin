@@ -2,7 +2,9 @@ ConnecpathHelper::Engine.routes.draw do
   resource :users do
     collection do
       # get 'current'
+      get 'user_by_sendbird_id'
       get 'create_counselor_notification'
+      get 'mark_notification_as_read'
       post 'update_user_field'
       get 'list'
       get 'sample'
