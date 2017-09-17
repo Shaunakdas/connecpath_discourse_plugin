@@ -236,10 +236,16 @@ module ConnecpathHelper
         user_h = User.where('name LIKE :search', search: "%#{query}%")
       end
       user_h.order(created_at: :desc).each do |user|
+        puts user.to_json
         if ((!user.admin)&&(user.id>0)&&(user.user_fields["1"] == params["role"])&&(user.user_fields["3"]) ) 
-          puts user.name
+          puts user.to_json
           user_params = (user.slice(:email, :active, :name, :username, :id, :created_at))      
-          user_params[:user_fields] = add_field_name(user.user_fields)      
+          user_params[:user_fields] = add_field_name(user.user_fields) 
+          avatar = UserAvatar.where(user: user).first
+          if avatar.custom_upload_id
+            url = Upload.where(id: avatar.custom_upload_id).last.url
+            user_params[:url] = url
+          end     
           user_list << user_params    
         end  
       end 
