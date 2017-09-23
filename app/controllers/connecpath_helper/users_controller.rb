@@ -89,6 +89,7 @@ module ConnecpathHelper
 
     def user_fields_by_username
       arr = params[:user_list]
+      puts arr
       arr = arr.uniq
       user_expanded_list = []
       # puts params
@@ -120,7 +121,7 @@ module ConnecpathHelper
         topic_params = (topic.slice(:id, :title, :last_posted_at, :created_at, :posts_count, :user_id, :reply_count, :category_id, :participant_count))      
         
         topic_params["post_stream"] = []
-        Post.where(topic: topic).limit(2).each do |post|
+        Post.where(topic: topic).order('post_number ASC').limit(2).each do |post|
           # puts post.to_json
           puts post.user_id
           user_list << post.user_id
@@ -152,9 +153,10 @@ module ConnecpathHelper
       if(topic)
         topic_params = (topic.slice(:id, :title, :last_posted_at, :created_at, :posts_count, :user_id, :reply_count, :category_id, :participant_count))      
         topic_expanded_list["details"] = topic_params 
-        topic_expanded_list["details"]["post_stream"] = []
+        # topic_expanded_list["details"]["post_stream"] = []
+        post_stream = []
         Post.where(topic: topic).order('post_number ASC').each do |post|
-          user_list << post.user_id
+          
           puts "Current Post"+post.to_json.to_s
           post_params = (post.slice(:id, :user_id, :post_number, :raw, :reply_count, :like_count, :created_at, :reply_to_post_number, :user_deleted, :deleted_at, :deleted_by_id))   
           # puts params[:user_id]
@@ -172,13 +174,30 @@ module ConnecpathHelper
             end
           end
 
-          topic_expanded_list["details"]["post_stream"] << post_params 
+          post_stream << post_params 
         # post = Topic.where(id: id).first
         end
+        puts (params.has_key?(:page))
+        puts (params.has_key?(:limit))
+        page_num = (params.has_key?("page"))? (params["page"].to_i-1):(3)
+        limit = (params.has_key?("limit"))? (params["limit"].to_i):(10)
+        puts "Page Number"+page_num.to_s
+        puts "Limit"+limit.to_s
+        result_list = post_stream.drop(page_num * limit).first(limit)
+        result_list.each do |answer|
+          user_list << answer["user_id"]
+        end
+
+        topic_expanded_list["details"]["post_stream"] = result_list
+        total_count = (post_stream.count/limit).to_i
       end
 
       user_expanded_list = user_details(user_list)
-      render json: { details_stream: topic_expanded_list, user_stream: user_expanded_list}
+      render json: { details_stream: topic_expanded_list, user_stream: user_expanded_list, page:page_num+1, limit: limit, total_page: total_count}
+    end
+
+    def replies_to_post
+
     end
 
     def mark_notification_as_read
