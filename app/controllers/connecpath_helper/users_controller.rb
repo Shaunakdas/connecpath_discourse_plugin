@@ -473,7 +473,8 @@ module ConnecpathHelper
       fields = convert_to_h(params)
       @mapping  = {"1" => "role", "2" => "graduation_year", "3" => "sendbird_id", "4" => "device_token",
      "5" => "channel_url", "6" => "activation_token", "7" =>"head_counselor", "8" => "answers_by_bot",
-      "9" => "answers_by_forum", "10" => "you_posted_to_forum", "11" => 'sendbird_broadcast_url', '12' => 'avatar_url'}
+      "9" => "answers_by_forum", "10" => "you_posted_to_forum", "11" => 'sendbird_broadcast_url', '12' => 'avatar_url',
+      '13' => 'school_code', '14' => 'school_name'}
       fields = fields.map {|k, v| [@mapping[k], v] }.to_h
       return fields
     end
