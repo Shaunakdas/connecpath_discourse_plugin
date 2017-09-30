@@ -114,9 +114,13 @@ module ConnecpathHelper
       topic_expanded_list = []
       user_expanded_list = {}
       user_list = []
+
+      page_num = (params.has_key?("page"))? (params["page"].to_i-1):(0)
+      limit = (params.has_key?("limit"))? (params["limit"].to_i):(10)
+      final_list = params[:topic_list].drop(page_num * limit).first(limit)
       # puts params
       # puts params[:topic_list]
-      params[:topic_list].each do |id|
+      final_list.each do |id|
         topic = Topic.where(id: id).first
         topic_params = (topic.slice(:id, :title, :last_posted_at, :created_at, :posts_count, :user_id, :reply_count, :category_id, :participant_count))      
         
@@ -140,8 +144,9 @@ module ConnecpathHelper
         end
         topic_expanded_list << topic_params 
       end
-
-      user_expanded_list = user_details(user_list)
+      if user_list.count > 0
+        user_expanded_list = user_details(user_list)
+      end
       render json: {id_stream: params.slice(:topic_list), details_stream: topic_expanded_list, user_stream: user_expanded_list}
     end
 
@@ -179,7 +184,7 @@ module ConnecpathHelper
         end
         puts (params.has_key?(:page))
         puts (params.has_key?(:limit))
-        page_num = (params.has_key?("page"))? (params["page"].to_i-1):(3)
+        page_num = (params.has_key?("page"))? (params["page"].to_i-1):(0)
         limit = (params.has_key?("limit"))? (params["limit"].to_i):(10)
         puts "Page Number"+page_num.to_s
         puts "Limit"+limit.to_s
@@ -218,6 +223,7 @@ module ConnecpathHelper
       # data: topic_title,original_post_id, original_post_type(1), original_username, display_username
       # where('full_name LIKE :search OR code LIKE :search', search: "%#{search}%")
       post = Post.where(id: params[:post_id]).first
+      puts post.to_json
       user_h = User.all
       user_h.order(created_at: :desc).each do |user|
         if ((!user.admin)&&(user.id>0)&&(user.user_fields["1"] == 'Counselor')&&(user.user_fields["3"]) )  
