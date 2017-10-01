@@ -232,7 +232,8 @@ module ConnecpathHelper
             original_post_type: 1,
             topic_title: post.topic.title,
             original_username: post.user.username,
-            display_username: post.user.username
+            display_username: post.user.username,
+            counselor: true
           }
           Notification.create(
             notification_type: Notification.types[:invited_to_topic],
