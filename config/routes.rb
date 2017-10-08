@@ -28,6 +28,7 @@ ConnecpathHelper::Engine.routes.draw do
       get 'categories_all'
       get 'delete_all_categories'
       get 'delete_category'
+      get 'get_api_key'
     end
   end
 end

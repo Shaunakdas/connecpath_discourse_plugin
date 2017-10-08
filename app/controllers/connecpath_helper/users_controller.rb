@@ -9,9 +9,41 @@ module ConnecpathHelper
     #   Rails.application.routes.call(request_env)
     # end
 
-    # def trial
-    #   internal_request('/users/password-reset/'+params[:email_token])
-    # end
+    def get_api_key
+
+        puts "PARAMS"+params[:id].to_s
+      if params[:id]
+        user = User.where(id: params[:id]).last
+
+        puts "USERR"+user.to_json
+      end
+      if(!user)
+        render json: { errors: "user couldn't be found"}
+      else
+        puts "USERR"+user.to_json
+        admin = User.where(admin: true).last
+        api_key = ApiKey.where(user_id: params[:user_id]).first
+        if !api_key
+          api_key = ApiKey.create(user: user, key: SecureRandom.hex(32), created_by: admin)
+        end
+        avatar = UserAvatar.where(user: user).last
+        puts avatar.to_json
+        puts api_key.to_json
+        response = {}
+        response[:api_key] ={}
+        response[:api_key][:id] = api_key.id
+        response[:api_key][:key] = api_key.key
+        response_params = {}
+        response_params[:id] = user.id
+        response_params[:avatar_template] = user.small_avatar_url 
+        response_params[:username] = user.username
+        response[:api_key][:user] =  response_params      
+        render json: response
+      end
+      
+      
+     
+    end
 
     def user_by_sendbird_id
       sendbird_id = params[:id]
