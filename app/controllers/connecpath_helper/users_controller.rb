@@ -35,7 +35,7 @@ module ConnecpathHelper
         response[:api_key][:key] = api_key.key
         response_params = {}
         response_params[:id] = user.id
-        response_params[:avatar_template] = user.small_avatar_url 
+        response_params[:avatar_template] = user.avatar_template 
         response_params[:username] = user.username
         response[:api_key][:user] =  response_params      
         render json: response
