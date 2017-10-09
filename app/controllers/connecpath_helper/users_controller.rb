@@ -22,7 +22,7 @@ module ConnecpathHelper
       else
         puts "USERR"+user.to_json
         admin = User.where(admin: true).last
-        api_key = ApiKey.where(user_id: params[:user_id]).first
+        api_key = ApiKey.where(user: user).first
         if !api_key
           api_key = ApiKey.create(user: user, key: SecureRandom.hex(32), created_by: admin)
         end
