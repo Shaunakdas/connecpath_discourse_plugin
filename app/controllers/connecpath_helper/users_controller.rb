@@ -258,7 +258,7 @@ module ConnecpathHelper
       puts post.to_json
       user_h = User.all
       user_h.order(created_at: :desc).each do |user|
-        if ((!user.admin)&&(user.id>0)&&(user.user_fields["1"] == 'Counselor')&&(user.user_fields["3"]) )  
+        if ((!user.admin)&&(user.id>0)&&(user.user_fields["1"] == 'Counselor')&&check_active_user(user) )  
           data = {
             original_post_id: post.id,
             original_post_type: 1,
@@ -295,7 +295,7 @@ module ConnecpathHelper
       end
       user_h.order(created_at: :desc).each do |user|
         puts user.to_json
-        if ((!user.admin)&&(user.id>0)&&(user.user_fields["1"] == params["role"])&&(user.user_fields["3"]) ) 
+        if ((!user.admin)&&(user.id>0)&&(user.user_fields["1"] == params["role"])&&check_active_user(user) ) 
           puts user.to_json
           user_params = (user.slice(:email, :active, :name, :username, :id, :created_at))      
           user_params[:user_fields] = add_field_name(user.user_fields) 
@@ -507,13 +507,19 @@ module ConnecpathHelper
     #   def endpoint_store_url
     #     "#{SiteSetting.endpoint_url}/api/users/retrieve_user_info.json"
     #   end
-
+    def check_active_user(user)
+      active = true
+      if user.user_fields['15'] && user.user_fields['15']== 'false'
+        active = false
+      end
+      return active
+    end
     def add_field_name(params)
       fields = convert_to_h(params)
       @mapping  = {"1" => "role", "2" => "graduation_year", "3" => "sendbird_id", "4" => "device_token",
      "5" => "channel_url", "6" => "activation_token", "7" =>"head_counselor", "8" => "answers_by_bot",
       "9" => "answers_by_forum", "10" => "you_posted_to_forum", "11" => 'sendbird_broadcast_url', '12' => 'avatar_url',
-      '13' => 'school_code', '14' => 'school_name'}
+      '13' => 'school_code', '14' => 'school_name', '15' => 'is_active'}
       fields = fields.map {|k, v| [@mapping[k], v] }.to_h
       return fields
     end
