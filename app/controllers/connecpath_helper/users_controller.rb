@@ -256,28 +256,44 @@ module ConnecpathHelper
       # where('full_name LIKE :search OR code LIKE :search', search: "%#{search}%")
       post = Post.where(id: params[:post_id]).first
       puts post.to_json
+      current_user = User.where(username: params[:username]).last
       user_h = User.all
-      user_h.order(created_at: :desc).each do |user|
-        if ((!user.admin)&&(user.id>0)&&(user.user_fields["1"] == 'Counselor')&&check_active_user(user) )  
-          data = {
-            original_post_id: post.id,
-            original_post_type: 1,
-            topic_title: post.topic.title,
-            original_username: post.user.username,
-            display_username: post.user.username,
-            counselor: true
-          }
-          Notification.create(
-            notification_type: Notification.types[:invited_to_topic],
-            topic_id: post.topic_id,
-            post_number: post.post_number,
-            user_id: user.id,
-            read: false,
-            data: data.to_json
-          )
-        end  
-      end 
+      if current_user.user_fields["1"] == 'Student'
+        # Announcement
+        user_h.order(created_at: :desc).each do |user|
+          if (preliminary_check(user)&&(user.user_fields["1"] == 'Counselor')&&(user.username != params[:username]) )  
+            post_notification(post, user, 13)
+          end 
+        end
+      else
+        #  Question by student
+        user_h.order(created_at: :desc).each do |user|
+          if (preliminary_check(user)&&(user.user_fields["1"] == 'Student')&&(user.username != params[:username]) )  
+            post_notification(post, user, 14)
+          end 
+        end
+      end
       render json: {notified: true} 
+    end
+
+    def post_notification(post, user, notification_type)
+      data = {
+        original_post_id: post.id,
+        original_post_type: 1,
+        topic_title: post.topic.title,
+        category_id: post.topic.category.id,
+        original_username: post.user.username,
+        display_username: post.user.username,
+        counselor: true
+      }
+      Notification.create(
+        notification_type: notification_type,
+        topic_id: post.topic_id,
+        post_number: post.post_number,
+        user_id: user.id,
+        read: false,
+        data: data.to_json
+      )
     end
 
     def list
@@ -513,6 +529,10 @@ module ConnecpathHelper
         active = false
       end
       return active
+    end
+
+    def preliminary_check(user)
+      return ((!user.admin)&&(user.id>0)&&check_active_user(user))
     end
     def add_field_name(params)
       fields = convert_to_h(params)
