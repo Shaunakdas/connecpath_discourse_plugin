@@ -287,6 +287,20 @@ module ConnecpathHelper
 
     end
 
+    def device_token_list
+      puts "Params Role"+ params["role"]
+      token_list = []
+      # where('full_name LIKE :search OR code LIKE :search', search: "%#{search}%")
+      user_h = User.all
+      user_h.order(created_at: :desc).each do |user|
+        puts user.to_json
+        if ((!user.admin)&&(user.id>0)&&(user.user_fields["1"] == params["role"])&&check_active_user(user) )    
+          token_list << user.user_fields['4'] if user.user_fields['4']
+        end  
+      end
+      render json: { user_list: token_list}
+    end
+
     def post_notification(post, user, notification_type)
       data = {
         original_post_id: post.id,

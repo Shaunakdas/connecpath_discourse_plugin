@@ -30,6 +30,7 @@ ConnecpathHelper::Engine.routes.draw do
       get 'delete_category'
       get 'get_api_key'
       get 'delete_notification'
+      get 'device_token_list'
     end
   end
 end
