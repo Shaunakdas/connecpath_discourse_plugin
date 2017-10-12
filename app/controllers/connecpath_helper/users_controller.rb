@@ -276,6 +276,17 @@ module ConnecpathHelper
       render json: {notified: true} 
     end
 
+    def delete_notification
+      if params.has_key?("id")
+        # Deleting Notification by id
+        Notification.find(params[:id]).destroy
+      else
+        # Deleting All Notification
+        Notification.delete_all
+      end
+
+    end
+
     def post_notification(post, user, notification_type)
       data = {
         original_post_id: post.id,
