@@ -290,12 +290,29 @@ module ConnecpathHelper
     def device_token_list
       puts "Params Role"+ params["role"]
       token_list = []
+      username_list = []
       # where('full_name LIKE :search OR code LIKE :search', search: "%#{search}%")
       user_h = User.all
       user_h.order(created_at: :desc).each do |user|
         puts user.to_json
         if ((!user.admin)&&(user.id>0)&&(user.user_fields["1"] == params["role"])&&check_active_user(user) )    
           token_list << user.user_fields['4'] if user.user_fields['4']
+          username_list << user.username if user.user_fields['4']
+        end  
+      end
+      render json: { token_list: token_list, username_list: username_list}
+    end
+
+
+    def unread_notif_list
+      puts "Params Role"+ params["role"]
+      token_list = []
+      # where('full_name LIKE :search OR code LIKE :search', search: "%#{search}%")
+      user_h = User.all
+      user_h.order(created_at: :desc).each do |user|
+        puts user.to_json
+        if ((!user.admin)&&(user.id>0)&&(user.user_fields["1"] == params["role"])&&check_active_user(user) )    
+          token_list << user.user_fields['16'] if user.user_fields['4']
         end  
       end
       render json: { user_list: token_list}
@@ -564,7 +581,7 @@ module ConnecpathHelper
       @mapping  = {"1" => "role", "2" => "graduation_year", "3" => "sendbird_id", "4" => "device_token",
      "5" => "channel_url", "6" => "activation_token", "7" =>"head_counselor", "8" => "answers_by_bot",
       "9" => "answers_by_forum", "10" => "you_posted_to_forum", "11" => 'sendbird_broadcast_url', '12' => 'avatar_url',
-      '13' => 'school_code', '14' => 'school_name', '15' => 'is_active'}
+      '13' => 'school_code', '14' => 'school_name', '15' => 'is_active', '16' => 'unread_notif_count'}
       fields = fields.map {|k, v| [@mapping[k], v] }.to_h
       return fields
     end
