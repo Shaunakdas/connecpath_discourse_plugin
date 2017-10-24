@@ -9,6 +9,43 @@ module ConnecpathHelper
     #   Rails.application.routes.call(request_env)
     # end
 
+    def increment_custom_field
+      result = {}
+      result[:user_fields]=[]
+      increment = (params["increment"])?(params["increment"].to_i):1
+      if params[:user_id].kind_of?(Array)
+        params[:user_id].each do |user_id|
+          result[:user_fields] << increment_field(user_id,params[:key],increment)
+        end
+      elsif params[:user_id]
+        result[:user_fields] << increment_field(params[:user_id],params[:key],increment)
+      end
+      render json: result
+    end
+
+    def increment_field(user_id,key,increment)
+      field = UserCustomField.where(user_id: user_id).where(name: 'user_field_'+key.to_s).first
+      if field
+        initial = 0
+        initial = field.value.to_i if field.value
+        if field.update_attributes({value: initial+increment.to_i})
+          puts true
+        else
+          puts false
+        end
+      else
+        field = UserCustomField.new({user_id: user_id, name: 'user_field_'+key.to_s, value: 1})
+        if field.save!
+          puts true
+        else
+          puts false
+        end
+      end
+      return field
+    end
+
+
+
     def get_api_key
 
         puts "PARAMS"+params[:id].to_s
@@ -291,6 +328,7 @@ module ConnecpathHelper
       puts "Params Role"+ params["role"]
       token_list = []
       username_list = []
+      user_id_list = []
       # where('full_name LIKE :search OR code LIKE :search', search: "%#{search}%")
       user_h = User.all
       user_h.order(created_at: :desc).each do |user|
@@ -298,9 +336,10 @@ module ConnecpathHelper
         if ((!user.admin)&&(user.id>0)&&(user.user_fields["1"] == params["role"])&&check_active_user(user) )    
           token_list << user.user_fields['4'] if user.user_fields['4']
           username_list << user.username if user.user_fields['4']
+          user_id_list << user.id if user.user_fields['4']
         end  
       end
-      render json: { token_list: token_list, username_list: username_list}
+      render json: { token_list: token_list, username_list: username_list, user_id_list: user_id_list}
     end
 
 
