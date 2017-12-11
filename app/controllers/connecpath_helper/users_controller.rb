@@ -13,7 +13,7 @@ module ConnecpathHelper
       render json: {status: 'found'}
     end
 
-    def trial_user
+    def trial_user_1
       user = User.find_by_username_or_email(params[:login])
       user_presence = user.present? && user.id > 0 && !user.staged
       if user_presence
@@ -43,9 +43,6 @@ module ConnecpathHelper
       end
 
       json = { result: "ok" }
-      unless SiteSetting.forgot_password_strict
-        json[:user_found] = user_presence
-      end
 
       render json: json
     end
