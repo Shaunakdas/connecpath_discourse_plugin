@@ -9,6 +9,20 @@ module ConnecpathHelper
     #   Rails.application.routes.call(request_env)
     # end
 
+    def trial_call
+      render json: {status: 'found'}
+    end
+
+    def trial_user
+      render json: {status: user = User.find_by_username_or_email(params[:login])}
+    end
+
+    def trial_user_1
+      user = User.find_by_username_or_email(params[:login])
+      user_presence = user.present? && user.id > 0 && !user.staged
+      render json: {status: user = user, presence: user_presence}
+    end
+
     def forgot_password
       user = User.find_by_username_or_email(params[:login])
       user_presence = user.present? && user.id > 0 && !user.staged

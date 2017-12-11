@@ -2,6 +2,9 @@ ConnecpathHelper::Engine.routes.draw do
   resource :users do
     collection do
       # get 'current'
+      get 'trial_call'
+      get 'trial_user'
+      get 'trial_user_1'
       get 'forgot_password'
       post 'increment_custom_field'
       get 'user_by_sendbird_id'
