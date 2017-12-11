@@ -9,48 +9,6 @@ module ConnecpathHelper
     #   Rails.application.routes.call(request_env)
     # end
 
-    def trial_call
-      render json: {status: 'found'}
-    end
-
-    def trial_user_1
-      user = User.find_by_username_or_email(params[:login])
-      user_presence = user.present? && user.id > 0 && !user.staged
-      if user_presence
-        email_token = user.email_tokens.create(email: user.email)
-      end
-      render json: {status: user}
-    end
-
-
-    def trial_user_2
-      user = User.find_by_username_or_email(params[:login])
-      user_presence = user.present? && user.id > 0 && !user.staged
-      if user_presence
-        email_token = user.email_tokens.create(email: user.email)
-        Jobs.enqueue(:critical_user_email, type: :forgot_password, user_id: user.id, email_token: email_token.token)
-      end
-
-      json = { result: "ok", email_token: email_token }
-
-      render json: json
-    end
-
-    def trial_user_3
-      user = User.find_by_username_or_email(params[:login])
-      user_presence = user.present? && user.id > 0 && !user.staged
-      if user_presence
-        email_token = user.email_tokens.create(email: user.email)
-      end
-
-      json = { result: "ok" }
-      unless SiteSetting.forgot_password_strict
-        json[:user_found] = user_presence
-      end
-
-      render json: json
-    end
-
     def forgot_password
       user = User.find_by_username_or_email(params[:login])
       user_presence = user.present? && user.id > 0 && !user.staged
@@ -60,9 +18,6 @@ module ConnecpathHelper
       end
 
       json = { result: "ok" }
-      unless SiteSetting.forgot_password_strict
-        json[:user_found] = user_presence
-      end
 
       render json: json
     end
